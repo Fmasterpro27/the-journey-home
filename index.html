@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Animation Movie</title>
+    <style>
+        body {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        #screen {
+            width: 60ch;
+            height: 20em;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            background: #001100;
+            font-size: 14px;
+            line-height: 1.2;
+            white-space: pre;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #00ffff;
+        }
+        
+        #controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            background: #003300;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        button:hover {
+            background: #004400;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #subtitle {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="title">ASCII ANIMATION MOVIE</div>
+    <div id="screen"></div>
+    <div id="subtitle"></div>
+    <div id="controls">
+        <button id="playBtn">▶ Play</button>
+        <button id="pauseBtn" disabled>⏸ Pause</button>
+        <button id="restartBtn">🔄 Restart</button>
+    </div>
+
+    <script>
+        const screen = document.getElementById('screen');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const subtitle = document.getElementById('subtitle');
+        
+        let currentFrame = 0;
+        let animationId;
+        let isPlaying = false;
+        
+        const frames = [
+            {
+                ascii: `
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║                    THE JOURNEY HOME                      ║
+║                                                          ║
+║                   An ASCII Adventure                     ║
+║                                                          ║
+║                      Press Play                          ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝`,
+                subtitle: "A tale of adventure and friendship",
+                duration: 2000
+            },
+            {
+                ascii: `
+          ∩───∩
+         (  ･ω･ )    Once upon a time...
+          \_) (_/
+               
+                    🏠
+               ┌─────────┐
+               │ HOME    │
+               └─────────┘
+               
+     In a peaceful village lived Kuma the bear...`,
+                subtitle: "Meet our hero, Kuma",
+                duration: 2500
+            },
+            {
+                ascii: `
+          ∩───∩
+         ( ･ω･ )っ   "I must find the magical forest!"
+          \_) (_/
+               
+      🌳    🌳         🌳
+        🌳      🌲   🌲
+    🌲      🌳    🌲
+         ENCHANTED FOREST
+               
+     Kuma heard tales of a magical place...`,
+                subtitle: "The quest begins",
+                duration: 2500
+            },
+            {
+                ascii: `
+                              ∩───∩
+                      ~~~    (  ･ω･ )
+                     ~~~~~    \_) (_/
+                    ~~~~~~~
+          
+     🏔️        ~~~~~~~~~~         🏔️
+    🏔️🏔️      ~~~~~~~~~~~~       🏔️🏔️
+   🏔️🏔️🏔️    ~~~~~~~~~~~~~~     🏔️🏔️🏔️
+               
+     Kuma crosses the rushing river...`,
+                subtitle: "Overcoming obstacles",
+                duration: 2500
+            },
+            {
+                ascii: `
+        ∩───∩       🌙
+       (  ･ω･ )        ✨
+        \_) (_/           ✨
+               
+      🌲🌲🌲🌲🌲🌲🌲
+     🌲 ✨   ✨   ✨ 🌲
+    🌲   ✨  🌟  ✨   🌲
+     🌲  ✨   ✨   ✨ 🌲
+      🌲🌲🌲🌲🌲🌲🌲
+               
+     At last! The magical forest appears!`,
+                subtitle: "Discovery of wonder",
+                duration: 3000
+            },
+            {
+                ascii: `
+                  🦋
+        ∩───∩       🌸  🦋
+       (  ◕ω◕ )   🌸      
+        \_) (_/      🌸 🦋
+               
+      🌲🌲🌲🌲🌲🌲🌲
+     🌲 🌸  🦋  🌸 🌲    "So beautiful!"
+    🌲  🌸 🌟 🌸  🌲
+     🌲 🌸  🦋  🌸 🌲
+      🌲🌲🌲🌲🌲🌲🌲
+               
+     The forest is full of magic and life!`,
+                subtitle: "A moment of pure joy",
+                duration: 3000
+            },
+            {
+                ascii: `
+        ∩───∩    🧙‍♀️
+       (  ･ω･ )   "Welcome, brave bear!"
+        \_) (_/     ✨
+               
+               🌟
+            ✨  ⭐  ✨    "Take this star
+         ✨           ✨   to light your way
+            ✨     ✨      home!"
+               ✨
+               
+     A wise wizard grants Kuma a gift...`,
+                subtitle: "The mentor appears",
+                duration: 3000
+            },
+            {
+                ascii: `
+                              ∩───∩
+                      ⭐     (  ･ω･ )
+                             \_) (_/
+          
+                 🌙
+               
+     🏔️                           🏔️
+    🏔️🏔️      Homeward bound     🏔️🏔️
+   🏔️🏔️🏔️                     🏔️🏔️🏔️
+               
+     With the magic star, Kuma heads home...`,
+                subtitle: "The journey continues",
+                duration: 2500
+            },
+            {
+                ascii: `
+        🏠
+   ┌─────────┐      ∩───∩
+   │ HOME    │     (  ◕ω◕ )  ⭐
+   └─────────┘      \_) (_/
+               
+     👫  "Welcome back, Kuma!"  👫
+               
+          🌸  🌸  🌸
+     Friends gather to hear tales
+        of the magical journey
+               
+     Home at last, with stories to share!`,
+                subtitle: "A hero's welcome",
+                duration: 3000
+            },
+            {
+                ascii: `
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║                        THE END                           ║
+║                                                          ║
+║         "Sometimes the greatest magic is               ║
+║           finding your way back home."                   ║
+║                                                          ║
+║                 - Kuma's Adventure -                     ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝`,
+                subtitle: "Thank you for watching!",
+                duration: 4000
+            }
+        ];
+        
+        function displayFrame(frameIndex) {
+            if (frameIndex >= frames.length) {
+                isPlaying = false;
+                playBtn.disabled = false;
+                pauseBtn.disabled = true;
+                currentFrame = 0;
+                return;
+            }
+            
+            const frame = frames[frameIndex];
+            screen.textContent = frame.ascii;
+            subtitle.textContent = frame.subtitle;
+            
+            if (isPlaying) {
+                animationId = setTimeout(() => {
+                    currentFrame++;
+                    displayFrame(currentFrame);
+                }, frame.duration);
+            }
+        }
+        
+        playBtn.addEventListener('click', () => {
+            isPlaying = true;
+            playBtn.disabled = true;
+            pauseBtn.disabled = false;
+            displayFrame(currentFrame);
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            isPlaying = false;
+            clearTimeout(animationId);
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+        });
+        
+        restartBtn.addEventListener('click', () => {
+            isPlaying = false;
+            clearTimeout(animationId);
+            currentFrame = 0;
+            playBtn.disabled = false;
+            pauseBtn.disabled = true;
+            displayFrame(0);
+        });
+        
+        // Initialize with first frame
+        displayFrame(0);
+    </script>
+</body>
+</html>
